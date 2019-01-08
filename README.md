@@ -15,7 +15,7 @@ If you'd like to manually manage your timers, you can instantiate a timer manual
 Creates a new timer and stores it for future reference.
 * Param `name` (Symbol, String): A unique identifier for this Timer.
 * Param `model` (Class): The Class that defines methods and attributes for ScheduleTimer to call.
-* Param `options` (Hash) (Optional): A Hash of options to customize the behavior of ScheduleTimer.
+* *Optional* Param `options` (Hash): A Hash of options to customize the behavior of ScheduleTimer.
 * Return (ScheduleTimer::Timer): The resulting Timer object.
 
 ```ruby
@@ -67,64 +67,3 @@ Deletes a timer from storage, freeing it up for garbage collection Interrupts th
 ```ruby
 ScheduleTimer.delete_timer :timer_name
 ```
-
-Class Method Details
-.delete_timer(name) ⇒ Boolean
-Deletes a timer from storage, freeing it up for garbage collection Interrupts the timer first, if it's still running
-
-Parameters:
-
-name (String, Symbol) — the name of the timer to delete
-Returns:
-
-(Boolean) — true if the timer successfully deleted, else false
-[View source]
-.get_timer(name) ⇒ ScheduleTimer::Timer
-Retrieves a stored timer object
-
-Parameters:
-
-name (String, Symbol) — the name of the timer to retrieve
-Returns:
-
-(ScheduleTimer::Timer) — the timer object
-[View source]
-.interrupt_timer(name) ⇒ Boolean
-Interrupts a stored timer This is similar to ScheduleTimer::Stop, but calls the on_interrupt method of each active model before stopping.
-
-Parameters:
-
-name (String, Symbol) — the name of the timer to interrupt
-Returns:
-
-(Boolean) — true if the timer successfully stopped, else false
-[View source]
-.new_timer(name, model, options = Hash.new) ⇒ Object
-Creates a new timer and stores it for future reference. If you create a timer this way, be sure to use ScheduleTimer.delete_timer when you're done with it. Otherwise it will stay referenced here and may not be garbage collected.
-
-Parameters:
-
-name (String, Symbol) — a unique name for this timer
-model (Class) — the class that defines the timer's behavior. See ScheduleTimer::Timer#initialize.
-options (Hash) (defaults to: Hash.new) — a hash of options to pass to the timer. See ScheduleTimer::Timer#initialize.
-[View source]
-.start_timer(name) ⇒ Boolean
-Starts a stored timer
-
-Parameters:
-
-name (String, Symbol) — the name of the timer to start
-Returns:
-
-(Boolean) — true if timer successfully started, else false
-[View source]
-.stop_timer(name) ⇒ Boolean
-Stops a stored timer
-
-Parameters:
-
-name (String, Symbol) — the name of the timer to stop
-Returns:
-
-(Boolean) — true if the timer successfully stopped, else false
-[View source]
