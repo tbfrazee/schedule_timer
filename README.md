@@ -95,7 +95,8 @@ Returns a Time object representing the time of day that this event should end, o
 ### interval ⇒ Integer
 Returns an Integer representing the number of seconds between ::on_interval method calls while active
 
-The following methods may be implemented in your model class, and will be called by the Timer as follows:
+---
+Additionally, the following methods may be implemented in your model class, and will be called by the Timer as follows:
 
 ### on_start
 Method called when start_time is reached (within start_date and end_date)
@@ -111,4 +112,54 @@ Method called when the Timer is interrupted
 
 ## Timer Options
 
-Options are even doper, dawg.
+The options passed into Timer.new define how you want the Timer to operate. All keys should be Symbols.
+
+### Basics
+
+**:id_field** (Symbol): (Default: :id) the unique identifying attribute of a model_class instance. This attribute reader or method must exist on your model class objects and return a unique identifier that can be used as a hash key.
+
+### Timing
+
+**:tick_interval** (Integer): (Default: 60) how frequently, in seconds, to check if events have started or ended. Lower values are more expensive.
+
+**:sync_to** (Symbol): if defined, wait to start Timer until the next minute, hour, or day. Allowed values: :minute, :hour, :day
+
+**:tick_before_sync** (Boolean): if true, Timer will tick once before waiting to sync as defined by :sync_to. Noop if :sync_to is not defined
+
+**:skip_first** (Boolean): if true, Timer will skip the first tick after it's started. Otherwise, it will tick immediately after starting (or after sync)
+
+### Database
+
+**:autoload** (Boolean): (Default: true) set to false if you don't want the model_class to attempt to load instances of itself from your database.
+
+**:all_method** (String, Symbol): (Defualt: :all) the method name that should be called on model_class if no filter is supplied. Typically this would retrieve all instances of model_class.
+
+**:filter_method** (String, Symbol): (Default: :where) the method name that should be called on model_class if a filter is supplied. The filter will be passed as an argument.
+
+### Filters
+
+Filters are processed in the order below. If a filter higher on this list is defined, ones below it will be ignored.
+
+**:filter** (Array, Any): a custom filter or 2D Array of parameters to be sent to model_class.
+
+If this is an Array, it will be flattened and sent to model_class using the __send__ method. Therefore, the first element of the Array should be the method to call. Options is not used. If this Array contains nested Arrays, they will be flattened and chained together. You can use this to create Active Record Query chains in Rails, such as ModelClass.join(:table).where('filter').
+
+If this is anything other than an Array, it will be sent to model_class.filter_method as-is.
+
+**:filter_sql** (String): SQL to be sent to filter_method. Can contain '?' placeholders for params.
+
+**:filter_params** (Array): params to be sent along with :filter_sql. Noop if :filter_sql is not defined. The following Symbols will be replaced as noted:
+
+**:filter_hash** (Hash): A hash to be sent to model_class.filter_method.
+
+Both :filter_params and :filter_hash can contain the following Symbols, which will be replaced with date strings as follows:
+
+* :now: current date and time (formatted '%FT%T')
+* :time: current time (formatted %T)
+* :today: current date (formatted %F)
+
+### Logging
+
+**:name** (String, Symbol): a name used for logging. If created through the ScheduleTimer::new_timer method, this defaults to your timer name, unless specified in the options hash.
+
+**:logger** (Class): a class containing the methods debug, info, warn, error, and fatal to log events.
