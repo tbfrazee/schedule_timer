@@ -11,23 +11,30 @@ ScheduleTimer includes a set of module methods that behave as a manager, providi
 If you'd like to manually manage your timers, you can instantiate a timer manually with ScheduleTimer::Timer#new. See ScheduleTimer::Timer for more information.
 
 ## ScheduleTimer Module Methods
-`#delete_timer(name) ⇒ Boolean`
+### #delete_timer(name) ⇒ Boolean
 Deletes a timer from storage, freeing it up for garbage collection Interrupts the timer first, if it's still running.
+    ScheduleTimer.delete_timer :timer_name
 
-`#get_timer(name) ⇒ ScheduleTimer::Timer`
+### #get_timer(name) ⇒ ScheduleTimer::Timer
 Retrieves a stored timer object.
+    timer = ScheduleTimer.get_timer :timer_name
 
-`#interrupt_timer(name) ⇒ Boolean
+### #interrupt_timer(name) ⇒ Boolean
 Interrupts a stored timer This is similar to ScheduleTimer::Stop, but calls the on_interrupt method of each active model before stopping.
+    ScheduleTimer.interrupt_timer :timer_name
 
-`#new_timer(name, model, options = Hash.new) ⇒ Object`
+### #new_timer(name, model, options = Hash.new) ⇒ Object
 Creates a new timer and stores it for future reference.
+    options = { :sync_to => :hour, :filter => { :name => 'Bob' }, :logger => Rails.logger }
+    timer = ScheduleTimer.new_timer :timer_name, ModelClass, options
 
-`#start_timer(name) ⇒ Boolean`
+### #start_timer(name) ⇒ Boolean
 Starts a stored timer.
+    ScheduleTimer.start_timer :timer_name
 
-`#stop_timer(name) ⇒ Boolean`
+### #stop_timer(name) ⇒ Boolean
 Stops a stored timer.
+    ScheduleTimer.stop_timer :timer_name
 
 Class Method Details
 .delete_timer(name) ⇒ Boolean
