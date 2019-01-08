@@ -1,5 +1,5 @@
 # ScheduleTimer
----
+
 ScheduleTimer is a Ruby module for implementing timed events with start and end times. It calls a specified method on your model class when each event starts, ends, or at regular intervals between start and end times. You define these times as attributes.
 
 These events can be extracted from a database (i.e. a Rails model) or defined manually.
@@ -10,18 +10,23 @@ ScheduleTimer includes a set of module methods that behave as a manager, providi
 
 If you'd like to manually manage your timers, you can instantiate a timer manually with ScheduleTimer::Timer#new. See ScheduleTimer::Timer for more information.
 
-## ScheduleTimer Class Method Summary
-    #delete_timer(name) ⇒ Boolean
+## ScheduleTimer Module Methods
+`#delete_timer(name) ⇒ Boolean`
 Deletes a timer from storage, freeing it up for garbage collection Interrupts the timer first, if it's still running.
-    #get_timer(name) ⇒ ScheduleTimer::Timer
+
+`#get_timer(name) ⇒ ScheduleTimer::Timer`
 Retrieves a stored timer object.
-    #interrupt_timer(name) ⇒ Boolean
+
+`#interrupt_timer(name) ⇒ Boolean
 Interrupts a stored timer This is similar to ScheduleTimer::Stop, but calls the on_interrupt method of each active model before stopping.
-    #new_timer(name, model, options = Hash.new) ⇒ Object
+
+`#new_timer(name, model, options = Hash.new) ⇒ Object`
 Creates a new timer and stores it for future reference.
-    #start_timer(name) ⇒ Boolean
+
+`#start_timer(name) ⇒ Boolean`
 Starts a stored timer.
-    #stop_timer(name) ⇒ Boolean
+
+`#stop_timer(name) ⇒ Boolean`
 Stops a stored timer.
 
 Class Method Details
