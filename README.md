@@ -80,34 +80,43 @@ The model class is also responsible for loading instances of itself from the dat
 
 Your model class should implement some or all of the following methods or attribute readers to retrieve time-based triggers, based on your use case.
 
-### start_date ⇒ Date
+**start_date ⇒ Date**
+
 Returns a Date object representing when this event should start, or nil for always (before end, if defined).
 
-### end_date ⇒ Date
+**end_date ⇒ Date**
+
 Returns a Date object representing when this event should end, or nil for no end.
 
-### start_time ⇒ Time
+**start_time ⇒ Time**
+
 Returns a Time object representing the time of day that this event should start, or nil for 00:00
 
-### end_time ⇒ Time
+**end_time ⇒ Time**
+
 Returns a Time object representing the time of day that this event should end, or nil for 00:00 the following day
 
-### interval ⇒ Integer
+**interval ⇒ Integer**
+
 Returns an Integer representing the number of seconds between ::on_interval method calls while active
 
 ---
 Additionally, the following methods may be implemented in your model class, and will be called by the Timer as follows:
 
-### on_start
+**on_start**
+
 Method called when start_time is reached (within start_date and end_date)
 
-### on_end
+**on_end**
+
 Method called when end_time is reached (within start_date and end_date)
 
-### on_interval
+**on_interval**
+
 Method called once per interval during the active time (between start_time and end_time within start_date and end_date)
 
-### on_interrupt
+**on_interrupt**
+
 Method called when the Timer is interrupted
 
 ## Timer Options
@@ -148,11 +157,11 @@ If this is anything other than an Array, it will be sent to model_class.filter_m
 
 **:filter_sql** (String): SQL to be sent to filter_method. Can contain '?' placeholders for params.
 
-**:filter_params** (Array): params to be sent along with :filter_sql. Noop if :filter_sql is not defined. The following Symbols will be replaced as noted:
+**:filter_params** (Array): params to be sent along with :filter_sql. Noop if :filter_sql is not defined.
 
 **:filter_hash** (Hash): A hash to be sent to model_class.filter_method.
 
-Both :filter_params and :filter_hash can contain the following Symbols, which will be replaced with date strings as follows:
+Both :filter_params and :filter_hash can contain the following Symbols as values, which will be replaced with date strings as follows:
 
 * :now: current date and time (formatted '%FT%T')
 * :time: current time (formatted %T)
@@ -160,6 +169,10 @@ Both :filter_params and :filter_hash can contain the following Symbols, which wi
 
 ### Logging
 
-**:name** (String, Symbol): a name used for logging. If created through the ScheduleTimer::new_timer method, this defaults to your timer name, unless specified in the options hash.
+**:name** (String, Symbol): a name used for logging. If created through the ScheduleTimer.new_timer method, this defaults to your timer name, unless specified in the options hash.
 
 **:logger** (Class): a class containing the methods debug, info, warn, error, and fatal to log events.
+
+## TODO
+* Implement automated scheduled reloads from database
+* Clean up interpretation of `Time` instances so that they ignore the embedded date value
