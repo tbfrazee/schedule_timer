@@ -6,16 +6,14 @@ These events can be extracted from a database (i.e. a Rails model) or defined ma
 
 ScheduleTimer is written in Ruby and has no external dependencies. The default settings, however, are built with Rails models in mind, and it takes very little configuration to use this module in Rails.
 
-ScheduleTimer includes a set of module methods that behave as a manager, providing most commonly used functionality. These methods can create, start, stop, delete, and retrieve timers, and stores timers for easy management.
-
-If you'd like to manually manage your timers, you can instantiate a timer manually with ScheduleTimer::Timer#new. See ScheduleTimer::Timer for more information.
+The ScheduleTimer module includes a set of module methods behaves as a manager, providing most commonly used functionality. These methods can create, start, stop, delete, and retrieve timers, and stores timers for easy management.  If you'd like to manually manage your timers, you can access the ScheduleTimer::Timer class directly.
 
 ## ScheduleTimer Module Methods
 ### #new_timer(name, model, options) ⇒ ScheduleTimer::Timer
 Creates a new timer and stores it for future reference.
 * Param `name` (Symbol, String): A unique identifier for this Timer.
-* Param `model` (Class): The Class that defines methods and attributes for ScheduleTimer to call.
-* *Optional* Param `options` (Hash): A Hash of options to customize the behavior of ScheduleTimer.
+* Param `model` (Class): The Class that defines methods and attributes for ScheduleTimer to call. See [Model Class](model-class) for more information.
+* *Optional* Param `options` (Hash): A Hash of options to customize the behavior of ScheduleTimer. See [Timer Options](timer-options) for more information.
 * Return (ScheduleTimer::Timer): The resulting Timer object.
 
 ```ruby
@@ -67,3 +65,10 @@ Deletes a timer from storage, freeing it up for garbage collection Interrupts th
 ```ruby
 ScheduleTimer.delete_timer :timer_name
 ```
+## Model Class
+
+Model class is dope, yo.
+
+## Timer Options
+
+Options are even doper, dawg.
