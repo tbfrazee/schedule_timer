@@ -12,8 +12,8 @@ The ScheduleTimer module includes a set of module methods behaves as a manager, 
 ### #new_timer(name, model, options) ⇒ ScheduleTimer::Timer
 Creates a new timer and stores it for future reference.
 * Param `name` (Symbol, String): A unique identifier for this Timer.
-* Param `model` (Class): The Class that defines methods and attributes for ScheduleTimer to call. See [Model Class](model-class) for more information.
-* *Optional* Param `options` (Hash): A Hash of options to customize the behavior of ScheduleTimer. See [Timer Options](timer-options) for more information.
+* Param `model` (Class): The Class that defines methods and attributes for ScheduleTimer to call. See [Model Class](#model-class) for more information.
+* *Optional* Param `options` (Hash): A Hash of options to customize the behavior of ScheduleTimer. See [Timer Options](#timer-options) for more information.
 * Return (ScheduleTimer::Timer): The resulting Timer object.
 
 ```ruby
