@@ -154,7 +154,7 @@ If this is an Array, it will be flattened and sent to model_class using the `__s
 ```ruby
 [
     [ 'joins', :table ],
-    [ 'where', { :name => 'Bob' ]
+    [ 'where', { :name => 'Bob' } ]
 ]
 ```
 
