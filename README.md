@@ -1,8 +1,6 @@
 # ScheduleTimer
 
-ScheduleTimer is a Ruby module for implementing timed events with start and end times. It calls a specified method on your model class when each event starts, ends, or at regular intervals between start and end times. You define these times as attributes.
-
-These events can be extracted from a database (i.e. a Rails model) or defined manually.
+ScheduleTimer is a Ruby module for implementing recurring calendar events with start and end times. You supply a class that defines start, end, and time interval values (a Rails model works well), and methods to be called when these events occur. ScheduleTimer loads instances of this class from your database (or you can add them manually) and waits for the first event to start.
 
 ScheduleTimer is written in Ruby and has no external dependencies. The default settings, however, are built with Rails models in mind, and it takes very little configuration to use this module in Rails.
 
