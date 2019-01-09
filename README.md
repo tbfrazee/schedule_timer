@@ -92,7 +92,7 @@ Returns a Time object representing the time of day that this event should start,
 
 **end_time ⇒ Time**
 
-Returns a Time object representing the time of day that this event should end, or nil for 00:00 the following day
+Returns a Time object representing the time of day that this event should end, or nil for 00:00 the following day. If start_time and end_time overlap, neither #on_start nor @on_end will be called. This way, you can cross midnight without triggering event method calls.
 
 **interval ⇒ Integer**
 
@@ -139,9 +139,9 @@ The options passed into Timer.new define how you want the Timer to operate. All 
 
 **:autoload** (Boolean): (Default: true) set to false if you don't want the model_class to attempt to load instances of itself from your database.
 
-**:all_method** (String, Symbol): (Defualt: :all) the method name that should be called on model_class if no filter is supplied. Typically this would retrieve all instances of model_class.
+**:all_method** (String, Symbol): (Defualt: :all) the method name that should be called on model_class to get instances from the database if no filter is supplied. This is called without arguments. Typically this would retrieve all instances of model_class.
 
-**:filter_method** (String, Symbol): (Default: :where) the method name that should be called on model_class if a filter is supplied. The filter will be passed as an argument.
+**:filter_method** (String, Symbol): (Default: :where) the method name that should be called on model_class to get instances from the database if a filter is supplied. The filter ([below])(#filters) will be passed as an argument.
 
 ### Filters
 
@@ -149,7 +149,20 @@ Filters are processed in the order below. If a filter higher on this list is def
 
 **:filter** (Array, Any): a custom filter or 2D Array of parameters to be sent to model_class.
 
-If this is an Array, it will be flattened and sent to model_class using the __send__ method. Therefore, the first element of the Array should be the method to call. Options is not used. If this Array contains nested Arrays, they will be flattened and chained together. You can use this to create Active Record Query chains in Rails, such as ModelClass.join(:table).where('filter').
+If this is an Array, it will be flattened and sent to model_class using the `__send__` method. Therefore, the first element of the Array should be the method to call. Options\[:filter_method] is not used. If this Array contains nested Arrays, they will be flattened and chained together. You can use this to create Active Record Query chains in Rails, i.e.:
+
+```ruby
+[
+    [ 'joins', :table ],
+    [ 'where', { :name => 'Bob' ]
+]
+```
+
+...will generate the query:
+
+```ruby
+ModelClass.join(:table).where('filter')
+```
 
 If this is anything other than an Array, it will be sent to model_class.filter_method as-is.
 
