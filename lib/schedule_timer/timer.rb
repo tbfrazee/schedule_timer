@@ -339,7 +339,7 @@ class ScheduleTimer::Timer
 					e.interval : (@options[:interval] ? @options[:inteval] : nil)
 				
 				if (s_date == nil || s_date <= now) && (e_date == nil || e_date > now)
-					if day == nil || day == now.day || (day.is_a(Array) && day.include?(now.day))
+					if day == nil || day == now.day || (day.is_a?(Array) && day.include?(now.day))
 						if s_time <= now && e_time > now
 							if @active.include?(e.id) && intrv
 								@active[e.id] -= @options[:tick_interval]
