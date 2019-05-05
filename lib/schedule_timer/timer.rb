@@ -10,7 +10,7 @@
 # designed model class.
 
 class ScheduleTimer::Timer
-	
+
 	##
 	# *model_class*
 	#
@@ -94,39 +94,25 @@ class ScheduleTimer::Timer
 			:all_method => 'all',
 			:id_field => :id
 		}
-		
+
 		options.each do |k,v|
 			@options[k] = v
 		end
-		
+
 		raise ArgumentError.new('Missing or invalid model class') unless model_class
 		raise ArgumentError.new('Invalid tick interval. Must be a number.') unless @options[:tick_interval].is_a? Numeric
-		
+
 		@options[:model] = model_class
-		
-		if @options[:reload_interval]
-			if @options[:reload_interval].is_a?(Symbol)
-				case @options[:reload_interval]
-					when :minute
-						@options[:reload_interval] = 60
-					when :hour
-						@options[:reload_interval] = 3600
-					when :day
-						@options[:reload_interval] = 86400
-				end
-			end
-			@reload_in = @options[:reload_interval]
-		end
-		
+
 		# Stores all relevant events and active events, respectively
 		# Key is obj[@options[:id_field]], value is the object itself
 		@events = Hash.new
 		@active = Hash.new
-		
+
 		# Mutex memory barrier
 		@mutex = Mutex.new
 	end
-	
+
 	##
 	# Starts the timer.
 	# If options[:autoload] is true or nil, model instances will be loaded at this time.
@@ -135,16 +121,16 @@ class ScheduleTimer::Timer
 	#
 	# @return [Boolean] true if the timer (or sync timer) started successfully, else false
 	def start()
-	
+
 		if @running || @wait_to_start
 			if @options[:logger] then @options[:logger].warn('EventTimer::start was called, but this instance is already running or syncing. Doing nothing.') end
 			return false
 		end
-		
+
 		unless @options[:autoload] === false then refresh_from_db end
-		
+
 		if @options[:sync_to]
-			if @options[:tick_before_sync] then tick end
+			if @options[:tick_before_sync] then tick(Time.now) end
 			@wait_to_start = true
 			@sync_thread = Thread.new do
 				sync_clock(@options[:sync_to]) do
@@ -154,10 +140,10 @@ class ScheduleTimer::Timer
 		else
 			do_start
 		end
-		
+
 		true
 	end
-	
+
 	##
 	# Stops the Timer.
 	#
@@ -173,7 +159,7 @@ class ScheduleTimer::Timer
 		elsif interrupt && @timer_thread && @timer_thread.status
 			@timer_thread.kill
 		end
-			
+
 		@mutex.synchronize do
 			@running = false
 		end
@@ -183,20 +169,22 @@ class ScheduleTimer::Timer
 			end
 		end
 		@active.clear
+		true
 	end
-	
+
 	##
 	# Interrupts the Timer. Convenience method for Tiemr::stop(true)
 	def interrupt
 		stop(true)
 	end
-	
+
 	##
 	# Clears model instance list an refreshed from database
 	#
 	# @param filter [Array, Any] a filter to override options[:filter]
 	def refresh_from_db(filter = nil)
 		filter = filter || @options[:filter]
+		models = []
 		if filter && filter.is_a?(Array)
 			models = filter.inject(@options[:model]) do |relation, query|
 				begin
@@ -224,11 +212,23 @@ class ScheduleTimer::Timer
 			models = @options[:model].__send__(@options[:all_method])
 		end
 		@events.clear
-		models.each do |m|
-			@events[m[@options[:id_field]]] = m
+		if(!models.nil?)
+			models.each do |m|
+				@events[m[@options[:id_field]]] = m
+			 	# unless @active[m[@options[:id_field]]]
+			end
+		end
+
+		if @options[:reload_at]
+			r_event = ReloadEvent.new(self, @options[:reload_at])
+			@events.push(r_event)
 		end
 	end
-	
+
+	def schedule_reload
+		@reload = true
+	end
+
 	##
 	# Adds an event to the Timer
 	#
@@ -238,7 +238,7 @@ class ScheduleTimer::Timer
 			@events[new_event[@options[:id_field]]] = new_event
 		end
 	end
-	
+
 	##
 	# Removes an event from the Timer
 	#
@@ -253,9 +253,9 @@ class ScheduleTimer::Timer
 			@events.remove(id)
 		end
 	end
-	
+
 	private
-	
+
 	def do_start
 		@wait_to_start = false
 		@running = true
@@ -282,17 +282,18 @@ class ScheduleTimer::Timer
 			true
 		end
 	end
-	
+
 	def timer_loop(skip_first = false)
 		@timer_thread = Thread.new do
 			next_tick = nil
 			while @running
 				unless skip_first
+
 					start = Time.now
-					tick
+					tick(start)
 					finish = Time.now
 					t_diff = finish - start
-					
+
 					# If the tick took longer than an interval, log it and tick again immediately
 					# Set the next tick to occur on time in order to re-sync
 					if t_diff > (next_tick ? next_tick : @options[:tick_interval])
@@ -305,62 +306,67 @@ class ScheduleTimer::Timer
 						next_tick = nil
 					end
 				else
+					sleep(@options[:tick_interval])
 					skip_first = false
 				end
 			end
 		end
 	end
-	
-	def tick
-		now = Time.new
-		
+
+	def tick(now)
+
 		if @options[:logger] then @options[:logger].debug 'EventTimer ' + @options[:name] + ' tick at ' + now.to_s end
-		
+
 		# Loop through events, parse dates/times
 		# s_date/e_date = parse-able strings representing start and end dates, or nil for all dates
 		# day = int or Array of ints representing the day(s) of the week, or nil for all days
 		# s_time/e_time = parse-able strings represeting start and end times, or nil for midnight
-		
+
 		# Get a lock so @events and @active aren't messed with while we're working
 		@mutex.synchronize do
 			@events.each do |id, e|
-				
-				s_date = (defined?(e.start_date) && e.start_date.is_a?(Date)) ? 
+
+				s_date = (defined?(e.start_date) && e.start_date.is_a?(Date)) ?
 					e.start_date : nil
-				e_date = (defined?(e.end_date) && e.end_date.is_a?(Date)) ? 
+				e_date = (defined?(e.end_date) && e.end_date.is_a?(Date)) ?
 					e.end_date : nil
-				s_time = (defined?(e.start_time) && (e.start_time.is_a?(Time) || e.start_time.is_a?(DateTime))) ? 
+				s_time = (defined?(e.start_time) && (e.start_time.is_a?(Time) || e.start_time.is_a?(DateTime))) ?
 					e.start_time : (@options[:start_time] ? @options[:start_time] : Time.local(now.year, now.month, now.day, 0, 0))
-				e_time = (defined?(e.end_time) && (e.end_time.is_a?(Time) || e.end_time.is_a?(DateTime))) ? 
+				e_time = (defined?(e.end_time) && (e.end_time.is_a?(Time) || e.end_time.is_a?(DateTime))) ?
 					e.end_time : (@options[:end_time] ? @options[:end_time] : Time.local(now.year, now.month, now.day + 1, 0, 0))
 				day = (defined?(e.day) && (e.day.is_a?(Numeric) || e.day.is_a?(Array))) ?
 					e.day : nil
-				intrv = (defined?(e.interval) && e.interval.is_a?(Numeric)) ? 
+				intrv = (defined?(e.interval) && e.interval.is_a?(Numeric)) ?
 					e.interval : (@options[:interval] ? @options[:inteval] : nil)
-				
+
 				if (s_date == nil || s_date <= now) && (e_date == nil || e_date > now)
 					if day == nil || day == now.day || (day.is_a?(Array) && day.include?(now.day))
 						if s_time <= now && e_time > now
-							if @active.include?(e.id) && intrv
-								@active[e.id] -= @options[:tick_interval]
-								if @active[e.id] <= 0
+							if @active.include?(e[@options[:id_field]]) && intrv
+								@active[e[@options[:id_field]]] -= @options[:tick_interval]
+								if @active[e[@options[:id_field]]] <= 0
 									e.__send__ :on_interval
-									@active[e.id] = intrv + @active[e.id]
+									@active[e[@options[:id_field]]] = intrv + @active[e[@options[:id_field]]]
 								end
 							else
 								e.__send__ :on_start
-								@active[e.id] = intrv ? intrv - (((s_time - now) * 60).floor) : nil
+								@active[e[@options[:id_field]]] = intrv ? intrv - (((s_time - now) * 60).floor) : nil
 							end
-						elsif @active.include?(e.id)
+						elsif @active.include?(e[@options[:id_field]])
 							e.__send__ :on_end
-							@active.delete(e.id)
+							@active.delete(e[@options[:id_field]])
 						end
 					end
-				end	
+				end
 			end
 		end
+
+		if @reload
+			refresh_from_db
+			@reload = false
+		end
 	end
-	
+
 	def parse_time_symbols(val)
 		case val
 			when :now
@@ -375,4 +381,5 @@ class ScheduleTimer::Timer
 				val
 		end
 	end
+
 end
