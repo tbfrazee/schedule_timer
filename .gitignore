@@ -1,4 +1,4 @@
 *.gem
-*.gemspec
 /doc
 /.yardoc
+.byebug_history
