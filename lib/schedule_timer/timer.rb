@@ -419,9 +419,9 @@ class ScheduleTimer::Timer
 	end
 
 	def process_time(time, now)
-		s_time = e.start_time.is_a?(Time) ? e.start_time : (e.start_time.is_a?(DateTime) ? e.start_time.to_time : Time.parse(e.start_time))
+		s_time = time.is_a?(Time) ? time : (time.is_a?(DateTime) ? time.to_time : Time.parse(time))
 		if !@options[:use_time_date]
-			s_time = Time.local(now.year, now.month , now.day, s_time.hour, s_time.minute, s_time.second)
+			s_time = Time.local(now.year, now.month , now.day, s_time.hour, s_time.min, s_time.sec)
 		end
 	end
 
