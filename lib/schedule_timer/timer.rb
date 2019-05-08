@@ -326,7 +326,8 @@ class ScheduleTimer::Timer
 					if t_diff > next_tick
 						if @options[:logger] then @options[:logger].info 'EventTimer ' + @options[:name] + ' tick took longer than tick interval. If this continues to happen, things will start running behind schedule.' end
 						if @options[:logger] then @options[:logger].debug 'EventTimer ' + @options[:name] + ' tick took ' + t_diff.round(2).to_s + ' seconds. This is greater than the tick interval, ' + @options[:tick_interval].round(2).to_s + '. Ticking again immediately.' end
-						next_tick = @options[:tick_interval] - (t_diff - @options[:tick_interval])
+						tick(Time.now, t_diff)
+						next_tick = calc_next_tick(t_diff)
 					else
 						if @options[:logger] then @options[:logger].debug 'EventTimer ' + @options[:name] + ' tick took ' + t_diff.round(2).to_s + ' seconds. Ticking again in ' + (next_tick - t_diff).round(2).to_s + ' seconds.' end
 						sleep(next_tick - t_diff)
@@ -438,6 +439,15 @@ class ScheduleTimer::Timer
 			else
 				val
 		end
+	end
+
+	def calc_next_tick(t_diff)
+		if(t_diff <= @options[:tick_interval])
+			return t_diff
+		end
+
+		new_diff = (@options[:tick_interval] - (t_diff - @options[:tick_interval])).abs
+		calc_next_tick(new_diff)
 	end
 
 end
