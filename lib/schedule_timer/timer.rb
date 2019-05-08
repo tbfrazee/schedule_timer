@@ -387,7 +387,7 @@ class ScheduleTimer::Timer
 				# end
 
 				if @active.include?(e[@options[:id_field]])
-					if (!e_date.nil? && e_date > now) ||
+					if (!e_date.nil? && e_date.to_time > now) ||
 							(!day.nil? && ((day.is_a?(Array) && !day.include?(now.day)) || (day.is_a(Numeric) && day != now.day))) ||
 							(e_time <= now)
 						e.__send__(:on_end) if defined?(e.on_end)
@@ -402,7 +402,7 @@ class ScheduleTimer::Timer
 						end
 					end
 				else
-					if (s_date.nil? || s_date <= now) && (e_date.nil? || e_date > now) &&
+					if (s_date.nil? || s_date.to_time <= now) && (e_date.nil? || (e_date + 1).to_time >= now) &&
 							(day.nil? || day == now.day || (day.is_a?(Array) && day.include?(now.day))) &&
 							(s_time <= now && e_time > now)
 						e.__send__(:on_start) if defined?(e.on_start)
