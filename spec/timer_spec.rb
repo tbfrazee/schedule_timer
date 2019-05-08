@@ -3,6 +3,7 @@ require 'fakes/fake_model'
 require 'fakes/fake_model_no_methods'
 require 'fakes/counter'
 require 'fakes/fake_with_dates_times'
+require 'fakes/sleeper'
 
 require 'byebug'
 require 'logger'
@@ -73,6 +74,17 @@ describe ScheduleTimer::Timer do
       expect(model.get_count).to eq 3
     end
 
+    it "should count 3 (start, interval, interval) despite long sleep" do
+      timer = ScheduleTimer::Timer.new(Sleeper, opts.merge({
+          :tick_interval => 5,
+          :name => "sleeper"
+      }))
+      timer.start
+      sleep(12)
+      timer.stop
+      model = timer.get_loaded_models[1]
+      expect(model.get_count).to eq 3
+    end
 
   end
 end

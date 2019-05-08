@@ -328,11 +328,12 @@ class ScheduleTimer::Timer
 						if @options[:logger] then @options[:logger].debug 'EventTimer ' + @options[:name] + ' tick took ' + t_diff.round(2).to_s + ' seconds. This is greater than the tick interval, ' + @options[:tick_interval].round(2).to_s + '. Ticking again immediately.' end
 						tick(Time.now, t_diff)
 						next_tick = calc_next_tick(t_diff)
+						sleep(next_tick)
 					else
 						if @options[:logger] then @options[:logger].debug 'EventTimer ' + @options[:name] + ' tick took ' + t_diff.round(2).to_s + ' seconds. Ticking again in ' + (next_tick - t_diff).round(2).to_s + ' seconds.' end
 						sleep(next_tick - t_diff)
-						next_tick = @options[:tick_interval]
 					end
+					next_tick = @options[:tick_interval]
 				else
 					sleep(next_tick)
 					skip_first = false
