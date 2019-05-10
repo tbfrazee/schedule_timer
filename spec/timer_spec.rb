@@ -32,7 +32,7 @@ describe ScheduleTimer::Timer do
       timer.start
       sleep(1)
       timer.stop
-      model = timer.get_loaded_models[1]
+      model = timer.get_loaded_events[1]
       expect(model.log).to match_array(["Start"])
     end
 
@@ -48,7 +48,7 @@ describe ScheduleTimer::Timer do
       sleep(1)
       timer.interrupt
       sleep(1)
-      model = (timer.get_loaded_models)[1]
+      model = (timer.get_loaded_events)[1]
       expect(model.log).to match_array(["Start", "Interrupt"])
     end
 
@@ -59,7 +59,7 @@ describe ScheduleTimer::Timer do
       timer.start
       sleep(3)
       timer.stop
-      model = timer.get_loaded_models[1]
+      model = timer.get_loaded_events[1]
       expect(model.get_count).to eq 2
     end
 
@@ -70,7 +70,7 @@ describe ScheduleTimer::Timer do
       timer.start
       sleep(20)
       timer.stop
-      model = timer.get_loaded_models[1]
+      model = timer.get_loaded_events[1]
       expect(model.get_count).to eq 3
     end
 
@@ -82,7 +82,7 @@ describe ScheduleTimer::Timer do
       timer.start
       sleep(12)
       timer.stop
-      model = timer.get_loaded_models[1]
+      model = timer.get_loaded_events[1]
       expect(model.get_count).to eq 3
     end
 

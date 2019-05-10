@@ -191,6 +191,8 @@ class ScheduleTimer::Timer
 	def refresh_from_db(filter = nil)
 		filter = filter || @options[:filter]
 		models = []
+
+		# Get instances from model class, applying filters if applicable
 		if filter && filter.is_a?(Array)
 			models = filter.inject(@options[:model]) do |relation, query|
 				begin
@@ -217,7 +219,13 @@ class ScheduleTimer::Timer
 		else
 			models = @options[:model].__send__(@options[:all_method])
 		end
+
 		@events.clear
+
+		# Re-enter additional events
+		@events.concat @options[:additional_events] if @options[:additional_events]
+
+		# Push newly loaded models into @events
 		if(!models.nil?)
 			models.each do |m|
 				@events[m[@options[:id_field]]] = m
@@ -225,19 +233,16 @@ class ScheduleTimer::Timer
 			end
 		end
 
+		# Add reload event, if reload is requested
 		if @options[:reload_at]
 			r_event = ReloadEvent.new(self, @options[:reload_at])
 			@events.push(r_event)
 		end
 
-		if @options[:additional_events]
-			@options[:additional_events].each do |e|
-				add_event e
-			end
-		end
-
 	end
 
+	##
+	# Schedules a reload on the next tick
 	def schedule_reload
 		@reload_scheduled = true
 	end
@@ -269,14 +274,24 @@ class ScheduleTimer::Timer
 		end
 	end
 
-	def get_loaded_models
+	##
+	# Gets loaded model instances
+	#
+	# @return An array of instances of ModelClass, plus any additional events
+	def get_loaded_events
 		@events
 	end
 
-	def get_active_models
+	##
+	# Gets model instances currently active
+	#
+	def get_active_events
 		@active
 	end
 
+	##
+	# Is the timer running?
+	#
 	def running?
 		@running
 	end
@@ -301,7 +316,7 @@ class ScheduleTimer::Timer
 			else
 				t_time = now
 		end
-		if @options[:logger] then @options[:logger].info('Waiting ' + (t_time - now).round(2).to_s + ' seconds for timer sync. EventTimer ' + @options[:name] + ' will start at ' + t_time.to_s) end
+		if @options[:logger] then @options[:logger].info('Waiting ' + (t_time - now).round(2).to_s + ' seconds for timer sync. Timer ' + @options[:name] + ' will start at ' + t_time.to_s) end
 		sleep(t_time - now)
 		if block_given?
 			yield
@@ -324,13 +339,13 @@ class ScheduleTimer::Timer
 					# If the tick took longer than an interval, log it and tick again immediately
 					# Set the next tick to occur on time in order to re-sync
 					if t_diff > next_tick
-						if @options[:logger] then @options[:logger].info 'EventTimer ' + @options[:name] + ' tick took longer than tick interval. If this continues to happen, things will start running behind schedule.' end
-						if @options[:logger] then @options[:logger].debug 'EventTimer ' + @options[:name] + ' tick took ' + t_diff.round(2).to_s + ' seconds. This is greater than the tick interval, ' + @options[:tick_interval].round(2).to_s + '. Ticking again immediately.' end
+						if @options[:logger] then @options[:logger].info 'Timer ' + @options[:name] + ' tick took longer than tick interval. If this continues to happen, things will start running behind schedule.' end
+						if @options[:logger] then @options[:logger].debug 'Timer ' + @options[:name] + ' tick took ' + t_diff.round(2).to_s + ' seconds. This is greater than the tick interval, ' + @options[:tick_interval].round(2).to_s + '. Ticking again immediately.' end
 						tick(Time.now, t_diff)
 						next_tick = calc_next_tick(t_diff)
 						sleep(next_tick)
 					else
-						if @options[:logger] then @options[:logger].debug 'EventTimer ' + @options[:name] + ' tick took ' + t_diff.round(2).to_s + ' seconds. Ticking again in ' + (next_tick - t_diff).round(2).to_s + ' seconds.' end
+						if @options[:logger] then @options[:logger].debug 'Timer ' + @options[:name] + ' tick took ' + t_diff.round(2).to_s + ' seconds. Ticking again in ' + (next_tick - t_diff).round(2).to_s + ' seconds.' end
 						sleep(next_tick - t_diff)
 					end
 					next_tick = @options[:tick_interval]
@@ -344,7 +359,7 @@ class ScheduleTimer::Timer
 
 	def tick(now, tick_time = @options[:tick_interval])
 
-		if @options[:logger] then @options[:logger].debug 'EventTimer ' + @options[:name] + ' tick at ' + now.to_s end
+		if @options[:logger] then @options[:logger].debug 'Timer ' + @options[:name] + ' tick at ' + now.to_s end
 
 		# Loop through events, parse dates/times
 		# s_date/e_date = parse-able strings representing start and end dates, or nil for all dates

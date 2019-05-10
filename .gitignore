@@ -1,4 +1,5 @@
 *.gem
+Gemfile.lock
 /doc
 /.yardoc
 .byebug_history
