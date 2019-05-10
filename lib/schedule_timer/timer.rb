@@ -223,7 +223,14 @@ class ScheduleTimer::Timer
 		@events.clear
 
 		# Re-enter additional events
-		@events.concat @options[:additional_events] if @options[:additional_events]
+		index = 1
+		if @options[:additional_events].kind_of?(Array)
+			@options[:additional_events].each do |e|
+				key = defined?(e[@options[:id_field]]) ? e[@options[:id_field]] : "additional_event_#{index}"
+				@events[key] = e
+				index += 1
+			end
+		end
 
 		# Push newly loaded models into @events
 		if(!models.nil?)
@@ -242,7 +249,7 @@ class ScheduleTimer::Timer
 	end
 
 	##
-	# Schedules a reload on the next tick
+	# Schedules a reload at the end of the current tick
 	def schedule_reload
 		@reload_scheduled = true
 	end

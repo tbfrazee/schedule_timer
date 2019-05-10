@@ -86,5 +86,16 @@ describe ScheduleTimer::Timer do
       expect(model.get_count).to eq 3
     end
 
+    it "should have 2 events, each count 2 (start, interval)" do
+      timer = ScheduleTimer::Timer.new(Counter, opts.merge({
+        :tick_interval => 2,
+        :additional_events => [Counter.new(2)]
+      }))
+      timer.start
+      sleep(3)
+      timer.stop
+      models = timer.get_loaded_events
+      expect(models[1].get_count).to eq models[2].get_count
+    end
   end
 end

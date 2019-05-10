@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    schedule_timer (0.2.2)
+    schedule_timer (0.2.3)
 
 GEM
   remote: https://rubygems.org/
